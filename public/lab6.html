@@ -1,0 +1,108 @@
+<html>
+<head>
+<title>City Hunter</title>
+
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/userinfo/1.1.1/userinfo.min.js"></script>
+
+
+<script>
+
+
+$(document).ready(function() {
+	//Getting user location by ip address
+	var userCity;
+	var ipAddress;
+	UserInfo.getInfo(function(data) {
+	  // the "data" object contains the info
+	  //console.log(data);
+	  userCity = data.city.name;
+	  //console.log(userCity);
+	  
+	  ipAddress = data.ip_address;
+	  //console.log(ipAddress);
+	 
+	$("#cityfield").val(userCity);
+	$( "#cityfield" ).keyup();
+$("#button").click(); //Initial click to load the weather
+	$("#welcomeMessage").text("We see you're from " + userCity + "!")
+	}, function(err) {
+		console.log("getting user data returned an error:" + err.toString());
+	  // the "err" object contains useful information in case of an error
+	});
+
+	
+
+	$( "#cityfield" ).keyup(function() {
+		
+		var url = "https://students.cs.byu.edu/~clement/CS360/ajax/getcity.cgi?q=" + $("#cityfield").val();
+	  $.getJSON(url,function(data) {
+
+		  var everything;
+		  everything = "<ul>";
+		  $.each(data, function(i,item) {
+			everything += "<li> "+data[i].city;
+		  });
+			
+		  everything += "</ul>";
+		  $("#txtHint").html(everything);
+	  });
+	});
+	
+	$("#button").click(function(e){
+	  var value = $("#cityfield").val();
+	  console.log('city field value is ' + value);
+	  e.preventDefault();
+	     
+	  var myurl= "https://api.wunderground.com/api/66a11cb361bdbc82/conditions/q/UT/";
+	  myurl += value;
+	  myurl += ".json";
+	  console.log(myurl);
+	  $.ajax({
+    url : myurl,
+    dataType : "jsonp",
+    success : function(parsed_json) {
+	
+	  console.log(parsed_json);
+      var location = parsed_json['current_observation']['display_location']['city'];
+      var temp_string = parsed_json['current_observation']['temperature_string'];
+      var current_weather = parsed_json['current_observation']['weather'];
+      everything = "<ul>";
+      everything += "<h2>Weather in "+location + "</h2>";
+      everything += "<li>Temperature: "+temp_string;
+      everything += "<li>Weather: "+current_weather;
+      everything += "</ul>";
+      $("#weather").html(everything);
+	  console.log(everything);
+    }
+	
+	
+	
+  });
+	   
+	   //66a11cb361bdbc82
+});
+
+	
+});
+</script>
+</head>
+<body>
+<div id="welcomeMessage" style="font-size:250%;margin-bottom:15px"></div>
+
+<p>Current Weather</p>
+
+
+<div id="weather">No weather</div>
+
+
+<div>Wanna check another city in Utah? Look it up here:</div>
+<form>
+Enter A Utah City: <input type="text" id="cityfield" value=""><br>
+Suggestion: <span id="txtHint">Empty</span>
+<input id="button" type="submit" value="Check Weather!">
+</form>
+
+</body>
+</html>
